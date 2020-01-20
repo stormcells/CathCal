@@ -49,16 +49,10 @@ def retrieve_readings():
         text = readings[i]['Citations'][0]['Reference']
         message = message + "\n" + text
 
-    return readings
+    return message
 
 
-def lambda_handler(event, context):
-    message = '\nToday\'s celebration(s):\n' + retrieve_celebrations()
-
-    message = message + "\nToday\'s readings:" + retrieve_readings()
-
-    print('final message:', message)
-
+def deliver_message(message):
     if 'SNS_ENABLED' in os.environ:
         if os.environ['SNS_ENABLED'] == 'TRUE':
             sns = boto3.client('sns')
@@ -71,6 +65,16 @@ def lambda_handler(event, context):
             print('SNS_ENABLED is false:\n' + message)
     else:
         print('Did NOT publish to SNS:\n' + message)
+
+
+def lambda_handler(event, context):
+    message = '\nToday\'s celebration(s):\n' + retrieve_celebrations()
+
+    message = message + "\nToday\'s readings:" + retrieve_readings()
+
+    print('final message:', message)
+
+    deliver_message(message)
 
     return {
         'statusCode': 200,
