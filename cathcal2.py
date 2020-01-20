@@ -15,7 +15,7 @@ def format_url(url):
     return formatted_url
 
 
-def lambda_handler(event, context):
+def retrieve_celebrations():
     calapi_response = requests.get(format_url("http://calapi.inadiutorium.cz/api/v0/en/calendars/general-en/{}/{}/{}"),
                                    timeout=1)
     calapi_response_json = calapi_response.json()
@@ -23,8 +23,7 @@ def lambda_handler(event, context):
 
     celebrations = calapi_response_json['celebrations']
 
-    message = '\nToday\'s celebration(s):\n'
-
+    message = ''
     i = 1
     for c in celebrations:
         message = message + '[' + str(i) + '] '
@@ -32,7 +31,10 @@ def lambda_handler(event, context):
         i += 1
 
     print('calapi message:', message)
+    return message
 
+
+def retrieve_readings():
     ewtn_response = requests.get(format_url("https://www.ewtn.com/se/readings/readingsservice.svc/day/{}-{}-{}/en"),
                                  timeout=1)
     ewtn_response_json = ewtn_response.json()
@@ -42,11 +44,18 @@ def lambda_handler(event, context):
     default_readings = reading_groups[0]
     readings = default_readings['Readings']
 
-    message = message + "\nToday\'s readings:"
-
+    message = ''
     for i in range(0, len(readings)):
         text = readings[i]['Citations'][0]['Reference']
         message = message + "\n" + text
+
+    return readings
+
+
+def lambda_handler(event, context):
+    message = '\nToday\'s celebration(s):\n' + retrieve_celebrations()
+
+    message = message + "\nToday\'s readings:" + retrieve_readings()
 
     print('final message:', message)
 
@@ -63,18 +72,9 @@ def lambda_handler(event, context):
     else:
         print('Did NOT publish to SNS:\n' + message)
 
-    if calapi_response.status_code == ewtn_response.status_code:
-        status_code = calapi_response.status_code
-    else:
-        status_code = max(calapi_response.status_code, ewtn_response.status_code)
-
-    return_body = {}
-    return_body.update(calapi_response_json)
-    return_body.update(ewtn_response_json)
-
     return {
-        'statusCode': status_code,
-        'body': return_body
+        'statusCode': 200,
+        'body': ''
     }
 
 
