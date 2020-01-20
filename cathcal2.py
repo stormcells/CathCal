@@ -82,6 +82,7 @@ def lambda_handler(event, context):
     }
 
 
+# remove below for deployment
 def main():
     lambda_handler(None, None)
 
