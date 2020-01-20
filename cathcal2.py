@@ -64,7 +64,7 @@ def deliver_message(message):
         else:
             print('SNS_ENABLED is false:\n' + message)
     else:
-        print('Did NOT publish to SNS:\n' + message)
+        print('Could not find SNS_ENABLED env var')
 
 
 def lambda_handler(event, context):
