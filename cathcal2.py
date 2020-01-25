@@ -58,7 +58,13 @@ def deliver_message(message):
             sns = boto3.client('sns')
             sns_response = sns.publish(
                 TopicArn=os.environ['ARN_TOPIC'],
-                Message=message
+                Message=message,
+                MessageAttributes={
+                    'AWS.SNS.SMS.SMSType': {
+                        'DataType': 'String',
+                        'StringValue': 'Transactional'
+                    }
+                }
             )
             print(sns_response)
         else:
